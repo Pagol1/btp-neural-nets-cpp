@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/neural_network.dir/src/MNIST.cpp.o CMakeFiles/neural_network.dir/src/activation_functions/Sigmoid.cpp.o CMakeFiles/neural_network.dir/src/activation_functions/Softmax.cpp.o CMakeFiles/neural_network.dir/src/layers/DenseLayer.cpp.o CMakeFiles/neural_network.dir/src/main.cpp.o CMakeFiles/neural_network.dir/src/models/ANN.cpp.o -o neural_network 
