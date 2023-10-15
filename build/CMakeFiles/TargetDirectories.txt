@@ -1,0 +1,3 @@
+/home/pagol1/Stuff/College/BTP/ANNs/neural_network_cpp/build/CMakeFiles/neural_network.dir
+/home/pagol1/Stuff/College/BTP/ANNs/neural_network_cpp/build/CMakeFiles/edit_cache.dir
+/home/pagol1/Stuff/College/BTP/ANNs/neural_network_cpp/build/CMakeFiles/rebuild_cache.dir
