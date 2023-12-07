@@ -26,7 +26,7 @@ bool Softmax::evalMulti(std::vector<TYPE> &x, act_ret_vector &ret) {
         float max_ele = (*std::max_element(x.begin(), x.end()));
 #endif
     for (size_t i=0; i<x.size(); ++i) {
-#if (TYPE_FIXED) 
+#if (TYPE_FIXED)
         ret.value[i] = std::exp(x[i].to_float() - max_ele);
 #else 
         ret.value[i] = std::exp(x[i] - max_ele);

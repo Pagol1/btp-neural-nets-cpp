@@ -10,6 +10,7 @@
 #include "layers/DenseLayer.h"
 #include "activation_functions/Sigmoid.h"
 #include "activation_functions/Softmax.h"
+#include "activation_functions/ReLU.h"
 
 class MNIST {
 public:

@@ -14,7 +14,7 @@ void print_progress(std::string msg, float progress) {
 }
 
 MNIST::MNIST(std::vector<std::vector<uint8_t>> &tr_x, std::vector<uint8_t> &tr_y, std::vector<std::vector<uint8_t>> &te_x, std::vector<uint8_t> &te_y) 
-    : model(false)
+    : model(RECORD)
 {
     train_x.resize(tr_x.size());
     for (size_t i=0; i<tr_x.size(); ++i) {
@@ -52,6 +52,10 @@ MNIST::MNIST(std::vector<std::vector<uint8_t>> &tr_x, std::vector<uint8_t> &tr_y
 
 bool MNIST::getLossVector(int y, std::vector<TYPE> &loss) {
     if (!model.getOutput(loss)) return false;
+    /* Test Loss */
+    //TYPE max_val = *std::max_element(loss.begin(), loss.end());
+    //for (int i=0; i<loss.size(); ++i) loss[i] = (loss[i]/max_val);
+    ///////////////
     loss[y] -= 1; 
     return true;
 }
@@ -66,7 +70,7 @@ bool MNIST::train() {
         std::vector<TYPE> grad_last(10);
         stat &= model.forwardPass(train_x[id]);
         stat &= getLossVector(train_y[id], grad_last);
-        stat &= model.backwardPass(grad_last);
+        stat &= model.backwardPass(grad_last, id==0);
         for (auto &l : layer_list) {
             l->updateSGD();
         }
@@ -90,5 +94,10 @@ bool MNIST::test() {
         print_progress("Test Progress: ", 1.0*id/(test_x.size()-1));
     }
     std::cout << "\nTesting Done | Accuracy " << 1.0*correct_pred/test_x.size() << "\n";
+    TYPE grad_min, grad_max;
+#if RECORD
+    model.getRecord(grad_min, grad_max);
+    std::cout << "Gradient Range: " << grad_min << " to " << grad_max << "\n";
+#endif
     return stat;
 }

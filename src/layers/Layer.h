@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include <random>
+#include <time.h>
 #include "my_defines.h"
 #include "activation_functions/ActivationFunction.h"
 

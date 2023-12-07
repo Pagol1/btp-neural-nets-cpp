@@ -8,7 +8,7 @@ bool ANN::addLayer(std::shared_ptr<Layer> new_layer) {
     size_t in_size, out_size;
     bool hw;
     TYPE lr;
-    layer_info temp = {in_size, out_size, hw, lr};
+    layer_info temp{in_size, out_size, hw, lr};
     layers.push_back(new_layer);
     bool stat = new_layer->getInfo(temp);
     //
@@ -48,7 +48,7 @@ bool ANN::forwardPass(std::vector<TYPE> &input) {
     return stat;
 }
 
-bool ANN::backwardPass(std::vector<TYPE> &grad_last) {
+bool ANN::backwardPass(std::vector<TYPE> &grad_last, bool add_record) {
     if (layers.size() == 0) return false;
     else if (layers.size() > 1) {
         bool stat = layers[layers.size()-1]->backward(grad_last, z[layers.size()-2], act_der[layers.size()-1], grad_z[layers.size()-1]);
@@ -56,9 +56,24 @@ bool ANN::backwardPass(std::vector<TYPE> &grad_last) {
             stat &= layers[i]->backward(grad_z[i+1], z[i-1], act_der[i], grad_z[i]);
         }
         stat &= layers[0]->backward(grad_z[1], x, act_der[0], grad_z[0]);
+#if RECORD
+            for (size_t i=0; i<layers.size()-2; ++i) {
+                TYPE max_val_grad = *std::max_element(grad_z[i].begin(), grad_z[i].end());
+                TYPE min_val_grad = *std::min_element(grad_z[i].begin(), grad_z[i].end());
+                record_grad_min = (record_grad_min < min_val_grad) ? record_grad_min : min_val_grad;
+                record_grad_max = (record_grad_max > max_val_grad) ? record_grad_max : max_val_grad;
+            }
+#endif
         return stat;
     }
     else {
         return layers[0]->backward(grad_last, x, act_der[0], grad_z[0]);
     }
+}
+
+bool ANN::getRecord(TYPE &min, TYPE &max) {
+    if (!record) return false;
+    min = record_grad_min; 
+    max = record_grad_max;
+    return record;
 }

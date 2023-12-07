@@ -9,11 +9,13 @@ public:
     bool loadData() override;
     bool getOutput(std::vector<TYPE> &out) override;
     bool forwardPass(std::vector<TYPE> &input) override;
-    bool backwardPass(std::vector<TYPE> &grad_last) override;
+    bool backwardPass(std::vector<TYPE> &grad_last, bool add_record=false) override;
+    bool getRecord(TYPE &min, TYPE &max);
 private:
     std::vector<std::shared_ptr<Layer>> layers;
     bool record;
-    std::vector<std::vector<TYPE>> record_data;
+    std::vector<std::vector<TYPE>> record_grad;
+    TYPE record_grad_min = 0, record_grad_max = 0;
     std::vector<std::vector<TYPE>> z;
     std::vector< std::vector<std::vector<TYPE>> > act_der;
     std::vector<std::vector<TYPE>> grad_z;

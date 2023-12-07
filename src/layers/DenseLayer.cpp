@@ -134,10 +134,8 @@ int main()
     std::vector<TYPE> x(5, 1);
 
     std::vector<TYPE> z_val(2, 1);
-    std::vector<std::vector<TYPE>> z_grad(2);
-    for (auto &ele : z_grad) {
-        ele.resize(1, 0);
-    }
+    std::vector<std::vector<TYPE>> z_grad(1);
+    z_grad[0].resize(2, 0);
 
     act_ret_vector temp{z_val, z_grad};
     bool stat = layer.forward(x, temp);
