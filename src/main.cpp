@@ -157,7 +157,7 @@ int main() {
     load_data("../data/t10k-images-idx3-ubyte", test_x); 
     load_labels("../data/t10k-labels-idx1-ubyte", test_y);
     std::cout << std::endl;
-    std::cout << static_cast<fixed>(1) << " " << static_cast<fixed>(-0.5)  << std::endl;
+    // std::cout << static_cast<fixed>(1) << " " << static_cast<fixed>(-0.5)  << std::endl;
     MNIST mnist(train_x, train_y, test_x, test_y);
     for (int epoch=1; epoch<=100; ++epoch) {
         std::cout << "======================================== EPOCH " << epoch << " ==============================================\n";

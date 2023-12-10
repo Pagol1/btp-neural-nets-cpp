@@ -461,7 +461,12 @@ public: // conversion to basic types
 	constexpr base_type to_raw() const {
 		return data_;
 	}
-
+// MOD - Make castable
+        /* Only one to remove ambiguity */
+        operator float() const {
+            return static_cast<float>(data_) / fixed::one;
+        }
+// : MOD
 public:
 	CONSTEXPR14 void swap(fixed &rhs) {
 		using std::swap;
