@@ -22,9 +22,9 @@ bool ReLU::getInfo(layer_info &x) {
     x.in_size = in_size;
     x.out_size = out_size;
     x.has_w = false;
-    x.has_b = has_bias;
-    x.has_cross = true;
-    x.lr = lr;
+    x.has_b = false;
+    x.has_cross = false;
+    x.lr = 0;
     return true;
 }
 

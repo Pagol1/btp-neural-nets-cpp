@@ -23,7 +23,7 @@ bool ANN::addLayer(std::shared_ptr<Layer> new_layer) {
     else grad_mul_list.push_back(eigen_mat(in_size, 1));
     assertm(
             grad_mul_list[grad_mul_list.size()-1].cols() == in_size && 
-            grad_mul_list[grad_mul_list.size()-1].rows() == out_size, 
+            grad_mul_list[grad_mul_list.size()-1].rows() == (hc) ? out_size : 1, 
             "grad_mul_list init");
     grad_z.push_back(eigen_vec(in_size));
     assertm(
@@ -52,7 +52,11 @@ bool ANN::loadData() {
 bool ANN::getOutput(eigen_vec &out) {
     if (layers.size() == 0) return false;
     out = z[layers.size()-1];
-    // std::cout << "DBM: " << z[layers.size()-2] << std::endl;
+    /*
+    std::cout << "DBM: " << z[layers.size()-2] << std::endl;
+    std::cout << "DBMB: " << out << std::endl;
+    std::cout << std::endl;
+    */
     return true;
 }
 
@@ -68,7 +72,7 @@ bool ANN::forwardPass(eigen_vec &input) {
     return stat;
 }
 
-bool ANN::backwardPass(eigen_vec &grad_last, bool add_record) {
+bool ANN::backwardPass(eigen_vec &grad_last, bool add_record, eigen_vec &label) {
     if (layers.size() == 0) return false;
     else if (layers.size() > 1) {
         bool stat = layers[layers.size()-1]->backward(grad_last, z[layers.size()-2], grad_mul_list[layers.size()-1], grad_z[layers.size()-1]);
@@ -84,6 +88,7 @@ bool ANN::backwardPass(eigen_vec &grad_last, bool add_record) {
                 record_grad_max = (record_grad_max > max_val_grad) ? record_grad_max : max_val_grad;
             }*/
 #endif
+        // assertm((z[layers.size()-1].array()-label.array() == grad_z[layers.size()-1].array()).all(), "softmax-cross grad property");
         return stat;
     }
     else {

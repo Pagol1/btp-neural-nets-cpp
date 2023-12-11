@@ -62,8 +62,8 @@ bool MNIST::getLossVector(int y, eigen_vec &loss, TYPE &loss_val) {
     TYPE p = loss[y];
     loss_val = -log(p);
     loss.setZero();
-    if (p == 0) loss[y] = LOSS_ZERO;
-    else loss[y] = 1/p;
+    if (p == 0) loss[y] = -LOSS_ZERO;
+    else loss[y] = -1/p;
     // std::cout <<  y << "," << loss << " ";
     return true;
 }
@@ -77,15 +77,17 @@ bool MNIST::train() {
     bool stat = true;
     std::cout << "Training Started\n";
     TYPE loss, norm{0};
+    eigen_vec label;
     /* Batch Size = 1 */
     for (size_t batch=0; batch<train_x.size()/BATCH_SIZE; ++batch) {
         norm = 1;
         for (size_t id=batch*BATCH_SIZE; id<std::min(train_x.size(), (batch+1)*BATCH_SIZE) && stat; ++id, ++norm) {
             eigen_vec grad_last;
+            label.setZero(10); label[train_y[id]] = 1;
             grad_last.resize(10);
             stat &= model.forwardPass(train_x[id]);
             stat &= getLossVector(train_y[id], grad_last, loss);
-            stat &= model.backwardPass(grad_last, id==0); 
+            stat &= model.backwardPass(grad_last, id==0, label); 
             print_progress("Train Progress: ", 1.0*id/(train_x.size()-1));
         }
         for (auto &l : layer_list) {

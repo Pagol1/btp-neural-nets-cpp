@@ -47,7 +47,7 @@ bool Softmax::forward(eigen_vec &in_x, ret_vector &ret) {
     ret.value = temp_vec.cast<TYPE>();
     ret.value = ret.value.array()/ret.value.sum();
 
-    ret.grad.setIdentity(in_size, in_size);
+    ret.grad = ret.value.array().matrix().asDiagonal();
     ret.grad -= ret.value * ret.value.transpose();
     return ret_stat;
 }

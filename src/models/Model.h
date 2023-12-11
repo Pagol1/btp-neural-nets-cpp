@@ -13,5 +13,5 @@ public:
     virtual bool loadData() = 0;
     virtual bool getOutput(eigen_vec &out) = 0; //virtual bool getOutput(std::vector<TYPE> &out) = 0;
     virtual bool forwardPass(eigen_vec &input) = 0; //virtual bool forwardPass(std::vector<TYPE> &input) = 0;
-    virtual bool backwardPass(eigen_vec &grad_last, bool add_record) = 0;   //virtual bool backwardPass(std::vector<TYPE> &grad_last, bool add_record) = 0;
+    virtual bool backwardPass(eigen_vec &grad_last, bool add_record, eigen_vec &label) = 0;   //virtual bool backwardPass(std::vector<TYPE> &grad_last, bool add_record) = 0;
 };

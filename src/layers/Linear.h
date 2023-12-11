@@ -26,6 +26,10 @@ private:
 
     eigen_mat weights, w_diff;
     eigen_vec biases, b_diff;
+#ifdef ADAM_P1
+    eigen_mat m_w, v_w;
+    eigen_vec m_b, v_b;
+#endif
     /* Old
     std::vector<std::vector<TYPE>> weights;
     std::vector<std::vector<TYPE>> w_diff;

@@ -22,6 +22,10 @@ Linear::Linear(size_t input_size, size_t output_size, bool has_b,
     /* w_diff.resize(out_size);
     for (auto &r : w_diff) r.resize(in_size, 0);*/
     w_diff.setZero(out_size, in_size);
+#ifdef ADAM_P1
+    m_w.setZero(out_size, in_size);
+    v_w.setZero(out_size, in_size);
+#endif
     assertm(w_diff.cols() == in_size && w_diff.rows() == out_size, "w_diff init");
     ///////std::cout << " " << w_diff << "|";
     /*
@@ -33,6 +37,10 @@ Linear::Linear(size_t input_size, size_t output_size, bool has_b,
         biases = eigen_vec::NullaryExpr(out_size, random_TYPE); // biases.resize(out_size);
         assertm(biases.cols() == 1 && weights.rows() == out_size, "biases init");
         b_diff.setZero(out_size);   // b_diff.resize(out_size, 0);
+#ifdef ADAM_P1
+        m_b.setZero(out_size);
+        v_b.setZero(out_size);
+#endif
         assertm(b_diff.cols() == 1 && b_diff.rows() == out_size, "b_diff init");
         /////////std::cout << " " << biases << "|" << b_diff << std::endl;
         /*for (auto &ele : biases)
@@ -143,15 +151,35 @@ bool Linear::backward(eigen_vec &grad_next, eigen_vec &x_cur, eigen_mat &grad_de
 
 bool Linear::updateSGD(TYPE norm) {
 #ifdef L2_NORM
-    weights = (1-2*lr)*weights.array();
+    weights = (1-2*L2_NORM*lr)*weights.array();
 #endif
+
+#ifdef ADAM_P1
+    w_diff /= norm;
+    m_w = ADAM_P1*m_w.array() + (1-ADAM_P1)*w_diff.array();
+    eigen_mat temp = (1-ADAM_P2)*w_diff.array()*w_diff.array();
+    v_w =  ADAM_P2*v_w.array() + temp.array();
+    // Update
+    weights = weights.array() - (lr/(1-ADAM_P1))*m_w.array()/(ADAM_EPS + v_w.array().sqrt());
+#else
     weights -= lr * w_diff / norm;
+#endif
     w_diff.setZero(out_size, in_size);
+
     if (has_bias) {
 #ifdef L2_NORM
-        biases = (1-2*lr)*biases.array();
+        biases = (1-2*L2_NORM*lr)*biases.array();
 #endif
+#ifdef ADAM_P1
+        b_diff /= norm;
+        m_b = ADAM_P1*m_b.array() + (1-ADAM_P1)*b_diff.array();
+        eigen_mat temp = (1-ADAM_P2)*b_diff.array()*b_diff.array();
+        v_b = ADAM_P2*v_b.array() + temp.array();
+        // Update
+        biases = biases.array() - (lr/(1-ADAM_P1))*m_b.array()/(ADAM_EPS + v_b.array().sqrt());
+#else
         biases -= lr * b_diff / norm;
+#endif
         b_diff.setZero(out_size);
     }
     return true;
