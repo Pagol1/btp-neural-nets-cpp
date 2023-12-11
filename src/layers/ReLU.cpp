@@ -60,6 +60,10 @@ bool ReLU::backward(eigen_vec &grad_next, eigen_vec &x_cur, eigen_mat &grad_der_
 bool ReLU::updateSGD(TYPE norm) {
     return true;
 }
+
+bool ReLU::resetGrad() {
+    return true;
+}
 /*
 int main() {
     ReLU layer(5, 5, true, 0.01);

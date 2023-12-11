@@ -75,27 +75,36 @@ bool MNIST::train() {
     for (int i=0; i<train_y.size(); ++i) 
         assertm(train_y[i] < 10, "train data");
     bool stat = true;
+#ifndef ACC_ONLY
     std::cout << "Training Started\n";
+#endif
     TYPE loss, norm{0};
-    eigen_vec label;
     /* Batch Size = 1 */
     for (size_t batch=0; batch<train_x.size()/BATCH_SIZE; ++batch) {
         norm = 1;
         for (size_t id=batch*BATCH_SIZE; id<std::min(train_x.size(), (batch+1)*BATCH_SIZE) && stat; ++id, ++norm) {
             eigen_vec grad_last;
-            label.setZero(10); label[train_y[id]] = 1;
             grad_last.resize(10);
             stat &= model.forwardPass(train_x[id]);
             stat &= getLossVector(train_y[id], grad_last, loss);
-            stat &= model.backwardPass(grad_last, id==0, label); 
+            stat &= model.backwardPass(grad_last, id==0); 
+#ifndef ACC_ONLY
             print_progress("Train Progress: ", 1.0*id/(train_x.size()-1));
+#endif
         }
         for (auto &l : layer_list) {
             l->updateSGD(norm);
         }
     }
-    if (stat) std::cout << "\nTraining Done | Loss Value: " << loss << "\n";
+    if (stat) {
+#ifndef ACC_ONLY
+        std::cout << "\nTraining Done | Loss Value: " << loss << "\n";
+#endif
+    }
     else std::cout << "\nTraining Failed\n";
+    for (auto &l : layer_list) {
+        l->resetGrad();
+    }
     return stat;
 }
 
@@ -104,7 +113,9 @@ bool MNIST::test() {
     int y_pred;
     TYPE max_pred;
     bool stat = true;
+#ifndef ACC_ONLY
     std::cout << "Testing Started\n";
+#endif
     eigen_vec out_pred;
     out_pred.resize(10);
     for (size_t id=0; id<test_x.size() && stat; ++id) {
@@ -121,13 +132,19 @@ bool MNIST::test() {
             }
         }
         correct_pred += (y_pred == test_y[id]);
+#ifndef ACC_ONLY
         print_progress("Test Progress: ", 1.0*id/(test_x.size()-1));
+#endif
     }
     if (!stat) {
         std::cout << "\nTesting Failed\n";
         return false;
     }
+#ifndef ACC_ONLY
     std::cout << "\nTesting Done | Accuracy " << 1.0*correct_pred/test_x.size() << "\n";
+#else
+    std::cout <<  1.0*correct_pred/test_x.size() << "\n";
+#endif
     TYPE grad_min, grad_max;
 #if RECORD
     model.getRecord(grad_min, grad_max);

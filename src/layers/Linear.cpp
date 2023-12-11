@@ -84,14 +84,9 @@ bool Linear::setData(layer_data &x) {
     out_size = weights.rows();
     // Check sizes
     assertm(weights.rows() == biases.cols(), "loaded data size");
-    //Old: for (auto &r : weights)
-    //    assertm(r.size() == in_size, "loaded data size");
     // Reallocate
     w_diff.resize(out_size, in_size);
     b_diff.resize(out_size, 1);
-    /*w_diff.resize(out_size);
-    for (auto &r : w_diff) r.resize(in_size, 0);
-    b_diff.resize(out_size, 0);*/
     return true;
 }
 
@@ -102,23 +97,6 @@ bool Linear::forward(eigen_vec &in_x, ret_vector &ret) {
     ret.grad = weights.transpose();
     return ret_stat;
 }
-    /* Old Logic
-    if (!has_weights) {
-        return activation_function->evalMulti(in_x, ret);
-    } else {
-        bool ret_stat = true;
-        for (size_t j=0; j<out_size; ++j) {
-            ret.value[j] = 0;
-            for (size_t i=0; i<in_size; ++i) {
-                ret.value[j] += weights[j][i] * in_x[i];
-            }
-            ret.value[j] += biases[j];
-            act_ret_single temp = {ret.value[j], ret.grad[0][j]};
-            ret_stat &= activation_function->evalSingle(ret.value[j], temp);
-        }
-        return ret_stat;
-    } 
-}*/
 
 /* next activation grad, previous activation, layer data, previous activation grad */
 bool Linear::backward(eigen_vec &grad_next, eigen_vec &x_cur, eigen_mat &grad_der_mul, eigen_vec &grad_cur) {
@@ -127,27 +105,7 @@ bool Linear::backward(eigen_vec &grad_next, eigen_vec &x_cur, eigen_mat &grad_de
     if (has_bias) b_diff += grad_next;
     return true;
 }
-/*    if (!has_weights) {
-        for (size_t i = 0; i<in_size; ++i) {
-            grad_cur[i] = 0;
-            for (size_t j=0; j<out_size; ++j) {
-                grad_cur[i] += cur_act_der[j][i] * grad_next[j];
-            }
-        }
-        return true;
-    } else {
-        for (size_t i=0; i<in_size; ++i) grad_cur[i] = 0;
 
-        for (size_t j=0; j<out_size; ++j) {
-            b_diff[j] = cur_act_der[0][j] * grad_next[j];
-            for (size_t i=0; i<in_size; ++i) {
-                w_diff[j][i] = x_cur[i] * b_diff[j];
-                grad_cur[i] += weights[j][i] * b_diff[j];
-            }
-        }
-        return true;
-    }
-}*/
 
 bool Linear::updateSGD(TYPE norm) {
 #ifdef L2_NORM
@@ -184,17 +142,22 @@ bool Linear::updateSGD(TYPE norm) {
     }
     return true;
 }
-/*    if (!has_weights) return false;
-    for (size_t j=0; j<out_size; ++j) {
-        for (size_t i=0; i<in_size; ++i) {
-            weights[j][i] -= lr * w_diff[j][i];
-            w_diff[j][i] = 0;
-        }
-        biases[j] -= lr * b_diff[j];
-        b_diff[j] = 0;
+
+bool Linear::resetGrad() {
+    w_diff.setZero(out_size, in_size);
+#ifdef ADAM_P1
+    m_w.setZero(out_size, in_size);
+    v_w.setZero(out_size, in_size);
+#endif
+    if (has_bias) {
+        b_diff.setZero(out_size);
+#ifdef ADAM_P1
+        m_b.setZero(out_size);
+        v_b.setZero(out_size);
+#endif
     }
     return true;
-}*/
+}
 
 /* TEST
 int main()

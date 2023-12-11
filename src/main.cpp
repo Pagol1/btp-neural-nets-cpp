@@ -160,7 +160,9 @@ int main() {
     // std::cout << static_cast<fixed>(1) << " " << static_cast<fixed>(-0.5)  << std::endl;
     MNIST mnist(train_x, train_y, test_x, test_y);
     for (int epoch=1; epoch<=100; ++epoch) {
+#ifndef ACC_ONLY
         std::cout << "======================================== EPOCH " << epoch << " ==============================================\n";
+#endif
         mnist.train();
         mnist.test();
     }

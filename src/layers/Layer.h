@@ -41,4 +41,5 @@ public:
     /* virtual bool backward(std::vector<TYPE> &grad_next, std::vector<TYPE> &x_cur, std::vector<std::vector<TYPE>> &cur_act_der, std::vector<TYPE> &grad_cur) = 0; */
     virtual bool backward(eigen_vec &grad_next, eigen_vec &x_cur, eigen_mat &grad_der_mul, eigen_vec &grad_cur) = 0;
     virtual bool updateSGD(TYPE norm) = 0;
+    virtual bool resetGrad() = 0;
 };

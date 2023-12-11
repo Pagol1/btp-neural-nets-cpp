@@ -9,7 +9,7 @@ public:
     bool loadData() override;
     bool getOutput(eigen_vec &out) override;
     bool forwardPass(eigen_vec &input) override;
-    bool backwardPass(eigen_vec &grad_last, bool add_record, eigen_vec &label) override;
+    bool backwardPass(eigen_vec &grad_last, bool add_record) override;
     bool getRecord(TYPE &min, TYPE &max);
 private:
     std::vector<std::shared_ptr<Layer>> layers;

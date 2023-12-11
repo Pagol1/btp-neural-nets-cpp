@@ -3,11 +3,11 @@
 #include <cassert>
 #include <Eigen/Dense>
 
-typedef numeric::fixed<24, 40> fixed;
+typedef numeric::fixed<16, 48> fixed;
 #define assertm(exp, msg) assert(((void)msg, exp))
 
-#define TYPE float
-#define TYPE_FIXED 0
+#define TYPE fixed
+#define TYPE_FIXED 1
 #define RECORD false
 
 #define BATCH_SIZE 64
@@ -19,6 +19,9 @@ typedef numeric::fixed<24, 40> fixed;
 #define ADAM_P1 0.9
 #define ADAM_P2 0.999
 #define ADAM_EPS 1e-8
+
+// Readings only
+// #define ACC_ONLY
 
 typedef Eigen::Matrix<TYPE, Eigen::Dynamic, Eigen::Dynamic> eigen_mat;
 typedef Eigen::Matrix<TYPE, Eigen::Dynamic, 1>              eigen_vec;

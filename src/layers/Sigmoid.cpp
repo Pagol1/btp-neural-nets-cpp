@@ -60,6 +60,10 @@ bool Sigmoid::backward(eigen_vec &grad_next, eigen_vec &x_cur, eigen_mat &grad_d
 bool Sigmoid::updateSGD(TYPE norm) {
     return true;
 }
+
+bool Sigmoid::resetGrad() {
+    return true;
+}
 /* TEST
 int main() {
     Sigmoid layer(5, 5, true, 0.01);

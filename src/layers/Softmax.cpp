@@ -60,3 +60,7 @@ bool Softmax::backward(eigen_vec &grad_next, eigen_vec &x_cur, eigen_mat &grad_d
 bool Softmax::updateSGD(TYPE norm) {
     return true;
 }
+
+bool Softmax::resetGrad() {
+    return true;
+}

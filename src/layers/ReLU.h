@@ -19,6 +19,7 @@ public:
     bool forward(eigen_vec &in_x, ret_vector &ret) override;
     bool backward(eigen_vec &grad_next, eigen_vec &x_cur, eigen_mat &grad_der_mul, eigen_vec &grad_cur) override;
     bool updateSGD(TYPE norm) override;
+    bool resetGrad() override;
 
 private:
     bool has_bias;

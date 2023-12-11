@@ -72,7 +72,7 @@ bool ANN::forwardPass(eigen_vec &input) {
     return stat;
 }
 
-bool ANN::backwardPass(eigen_vec &grad_last, bool add_record, eigen_vec &label) {
+bool ANN::backwardPass(eigen_vec &grad_last, bool add_record) {
     if (layers.size() == 0) return false;
     else if (layers.size() > 1) {
         bool stat = layers[layers.size()-1]->backward(grad_last, z[layers.size()-2], grad_mul_list[layers.size()-1], grad_z[layers.size()-1]);
