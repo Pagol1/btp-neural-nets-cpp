@@ -291,7 +291,28 @@ public: // constructors
 	constexpr fixed(Number n, typename std::enable_if<std::is_arithmetic<Number>::value>::type * = nullptr)
 		: data_(static_cast<base_type>(n * one)) {
 	}
+// MOD ==> Up and Down Convert
+public: // conversion
+	template <size_t I2, size_t F2>
+	CONSTEXPR14 explicit fixed(fixed<I2, F2> other) {
+		// static_assert(I2 <= I && F2 <= F, "Scaling conversion can only upgrade types");
+		if (I2 <= I && F2 <= F) {   // upcast
+                    using T = fixed<I2, F2>;
 
+		    const base_type fractional = (other.data_ & T::fractional_mask);
+	            const base_type integer    = (other.data_ & T::integer_mask) >> T::fractional_bits;
+		    data_                      = (integer << fractional_bits) | (fractional << (fractional_bits - T::fractional_bits));
+                } else if (I2 >= I && F2 >= F) {    // downcast
+                    // static_assert( I2+F2 == 2*(I+F), "Scaling conversion can only be done between adjacent types");
+                    using T = fixed<I2, F2>;
+
+                    const base_type fractional = static_cast<base_type>((other.data_ & T::fractional_mask) >> (T::fractional_bits - fractional_bits));
+                    const base_type integer    = static_cast<base_type>((other.data_ & T::integer_mask) >> T::fractional_bits);
+                    data_                      = (integer << fractional_bits) | fractional;
+                }
+	}
+// : MOD
+/*
 public: // conversion
 	template <size_t I2, size_t F2>
 	CONSTEXPR14 explicit fixed(fixed<I2, F2> other) {
@@ -302,7 +323,7 @@ public: // conversion
 		const base_type integer    = (other.data_ & T::integer_mask) >> T::fractional_bits;
 		data_                      = (integer << fractional_bits) | (fractional << (fractional_bits - T::fractional_bits));
 	}
-
+*/
 private:
 	// this makes it simpler to create a fixed point object from
 	// a native type without scaling

@@ -1,0 +1,72 @@
+1. Clean up the "TYPE instances"
+2. Split eigen stuff    // Possibly do ret_value ==> eigen_vecw and convert to eigen_vecn
+=== Template ===
+#ifdef MIXED_PREC
+#else   // MIXED_PREC
+#endif  // MIXED_PREC
+=== Design Choices ===
+
+=== TYPE Instances ===
+MNIST.cpp:54:bool MNIST::getLossVector(int y, eigen_vec &loss, TYPE &loss_val) {
+MNIST.cpp:57:    //TYPE max_val = *std::max_element(loss.begin(), loss.end());
+MNIST.cpp:62:    TYPE p = loss[y];
+MNIST.cpp:81:    TYPE loss, norm{0};
+MNIST.cpp:114:    TYPE max_pred;
+MNIST.cpp:148:    TYPE grad_min, grad_max;
+models/ANN.h:13:    bool getRecord(TYPE &min, TYPE &max);
+models/ANN.h:17:    std::vector<eigen_mat> record_grad; //std::vector<std::vector<TYPE>> record_grad;
+models/ANN.h:18:    TYPE record_grad_min = 0, record_grad_max = 0;
+models/ANN.h:19:    std::vector<eigen_vec> z;   //std::vector<std::vector<TYPE>> z;
+models/ANN.h:20:    std::vector<eigen_mat> grad_mul_list;   //std::vector< std::vector<std::vector<TYPE>> > act_der;
+models/ANN.h:21:    std::vector<eigen_vec> grad_z;  //std::vector<std::vector<TYPE>> grad_z;
+models/ANN.h:22:    eigen_vec x;    //std::vector<TYPE> x;
+models/ANN.cpp:11:    TYPE lr;
+models/ANN.cpp:85:                TYPE max_val_grad = *std::max_element(grad_z[i].begin(), grad_z[i].end());
+models/ANN.cpp:86:                TYPE min_val_grad = *std::min_element(grad_z[i].begin(), grad_z[i].end());
+models/ANN.cpp:99:bool ANN::getRecord(TYPE &min, TYPE &max) {
+models/Model.h:14:    virtual bool getOutput(eigen_vec &out) = 0; //virtual bool getOutput(std::vector<TYPE> &out) = 0;
+models/Model.h:15:    virtual bool forwardPass(eigen_vec &input) = 0; //virtual bool forwardPass(std::vector<TYPE> &input) = 0;
+models/Model.h:16:    virtual bool backwardPass(eigen_vec &grad_last, bool add_record) = 0;   //virtual bool backwardPass(std::vector<TYPE> &grad_last, bool add_record) = 0;
+MNIST.h:25:    bool getLossVector(int y, eigen_vec &loss, TYPE &loss_val);
+layers/Sigmoid.h:9:    Sigmoid(size_t input_size, size_t output_size, bool has_b, TYPE learn_r);
+layers/Sigmoid.h:21:    bool updateSGD(TYPE norm) override;
+layers/Sigmoid.h:27:    TYPE lr;
+layers/Softmax.h:9:    Softmax(size_t input_size, size_t output_size, bool has_b, TYPE learn_r);
+layers/Softmax.h:21:    bool updateSGD(TYPE norm) override;
+layers/Softmax.h:27:    TYPE lr;
+layers/Sigmoid.cpp:7:        TYPE learn_r) :  has_bias(has_b), in_size(input_size), 
+layers/Sigmoid.cpp:48:    ret.value = temp_vec.cast<TYPE>();
+layers/Sigmoid.cpp:51:    ret.grad = temp_vec.cast<TYPE>();
+layers/Sigmoid.cpp:60:bool Sigmoid::updateSGD(TYPE norm) {
+layers/Sigmoid.cpp:72:    std::vector<TYPE> vec{1, 0.5, -0.5, 0, -1};
+layers/ReLU.h:9:    ReLU(size_t input_size, size_t output_size, bool has_b, TYPE learn_r);
+layers/ReLU.h:21:    bool updateSGD(TYPE norm) override;
+layers/ReLU.h:27:    TYPE lr;
+layers/Linear.cpp:9:        TYPE learn_r) :  has_bias(has_b), in_size(input_size), 
+layers/Linear.cpp:15:    auto random_TYPE = [&dist, &gen]{ return (TYPE) dist(gen); };
+layers/Linear.cpp:19:    weights = eigen_mat::NullaryExpr(out_size, in_size, random_TYPE);
+layers/Linear.cpp:34:            ele = random_TYPE();
+layers/Linear.cpp:37:        biases = eigen_vec::NullaryExpr(out_size, random_TYPE); // biases.resize(out_size);
+layers/Linear.cpp:47:            ele = random_TYPE();*/
+layers/Linear.cpp:110:bool Linear::updateSGD(TYPE norm) {
+layers/Linear.h:8:    Linear(size_t input_size, size_t output_size, bool has_b, TYPE learn_r);
+layers/Linear.h:20:    bool updateSGD(TYPE norm) override;
+layers/Linear.h:26:    TYPE lr;
+layers/Linear.h:35:    std::vector<std::vector<TYPE>> weights;
+layers/Linear.h:36:    std::vector<std::vector<TYPE>> w_diff;
+layers/Linear.h:37:    std::vector<TYPE> biases;
+layers/Linear.h:38:    std::vector<TYPE> b_diff; */
+layers/Layer.h:16:    TYPE &lr;
+layers/Layer.h:20:    eigen_mat &w; //std::vector<std::vector<TYPE>> &w;
+layers/Layer.h:22:    eigen_vec &b; //std::vector<TYPE> &b;
+layers/Layer.h:39:    /* virtual bool forward(std::vector<TYPE> &in_x, act_ret_vector &ret) = 0; */
+layers/Layer.h:41:    /* virtual bool backward(std::vector<TYPE> &grad_next, std::vector<TYPE> &x_cur, std::vector<std::vector<TYPE>> &cur_act_der, std::vector<TYPE> &grad_cur) = 0; */
+layers/Layer.h:43:    virtual bool updateSGD(TYPE norm) = 0;
+layers/ReLU.cpp:4:        TYPE learn_r) :  has_bias(has_b), in_size(input_size), 
+layers/ReLU.cpp:47:    mask = temp_vec.cast<TYPE>();
+layers/ReLU.cpp:60:bool ReLU::updateSGD(TYPE norm) {
+layers/ReLU.cpp:72:    std::vector<TYPE> vec{1, 0.5, -0.5, 0, -1};
+layers/Softmax.cpp:4:        TYPE learn_r) :  has_bias(has_b), in_size(input_size), 
+layers/Softmax.cpp:47:    ret.value = temp_vec.cast<TYPE>();
+layers/Softmax.cpp:60:bool Softmax::updateSGD(TYPE norm) {
+

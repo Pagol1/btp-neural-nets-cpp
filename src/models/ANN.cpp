@@ -8,24 +8,41 @@ ANN::ANN(bool rec) : record(rec) {
 bool ANN::addLayer(std::shared_ptr<Layer> new_layer) {
     size_t in_size, out_size;
     bool hw, hb, hc;
-    TYPE lr;
+#ifdef MIXED_PREC
+    TYPE_N lr;    // TYPEN
+#else   // MIXED_PREC
+    TYPE lr;    // TYPEN
+#endif  // MIXED_REC
 
     layer_info temp{in_size, out_size, hw, hb, hc, lr};
     layers.push_back(new_layer);
     bool stat = new_layer->getInfo(temp);
 
+#ifdef MIXED_PREC
+    z.push_back(eigen_vec_n(out_size));
+#else   // MIXED_PREC
     z.push_back(eigen_vec(out_size));
+#endif  // MIXED_PREC
     assertm(
             z[z.size()-1].cols() == 1 && 
             z[z.size()-1].rows() == out_size, 
             "z init");
+#ifdef MIXED_PREC
+    if (hc) grad_mul_list.push_back(eigen_mat_n(in_size, out_size));
+    else grad_mul_list.push_back(eigen_mat_n(in_size, 1));
+#else   // MIXED_PREC
     if (hc) grad_mul_list.push_back(eigen_mat(in_size, out_size));
     else grad_mul_list.push_back(eigen_mat(in_size, 1));
+#endif  // MIXED_PREC
     assertm(
             grad_mul_list[grad_mul_list.size()-1].cols() == in_size && 
             grad_mul_list[grad_mul_list.size()-1].rows() == (hc) ? out_size : 1, 
             "grad_mul_list init");
+#ifdef MIXED_PREC
+    grad_z.push_back(eigen_vec_n(in_size));
+#else   // MIXED_PREC
     grad_z.push_back(eigen_vec(in_size));
+#endif  // MIXED_PREC
     assertm(
             grad_z[grad_z.size()-1].cols() == 1 && 
             grad_z[grad_z.size()-1].rows() == in_size, 
@@ -49,7 +66,11 @@ bool ANN::loadData() {
     return false;
 }
 
+#ifdef MIXED_PREC
+bool ANN::getOutput(eigen_vec_n &out) {
+#else   // MIXED_PREC
 bool ANN::getOutput(eigen_vec &out) {
+#endif  // MIXED_REC
     if (layers.size() == 0) return false;
     out = z[layers.size()-1];
     /*
@@ -60,10 +81,17 @@ bool ANN::getOutput(eigen_vec &out) {
     return true;
 }
 
+#ifdef MIXED_PREC
+bool ANN::forwardPass(eigen_vec_n &input) {
+#else   // MIXED_PREC
 bool ANN::forwardPass(eigen_vec &input) {
+#endif  // MIXED_REC
     x = input;
     if (layers.size() == 0) return false;
-    ret_vector temp = {z[0], grad_mul_list[0]};
+    // Split A [TYPEW] and Z [TYPEN] ==> I would require a dynamic type holder then
+    // Issue: How do we store gradients? ==> TYPEN makes sense if we have to move it on the bus
+    // More Accurate Simulation ==> Would have to use spatial_for params for swapping b/w types
+    ret_vector temp = {z[0], grad_mul_list[0]};     
     bool stat = layers[0]->forward(input, temp);
     for (size_t i=1; i<layers.size(); ++i) {
         ret_vector temp = {z[i], grad_mul_list[i]};
@@ -72,7 +100,11 @@ bool ANN::forwardPass(eigen_vec &input) {
     return stat;
 }
 
+#ifdef MIXED_PREC
+bool ANN::backwardPass(eigen_vec_n &grad_last, bool add_record) {
+#else   // MIXED_PREC
 bool ANN::backwardPass(eigen_vec &grad_last, bool add_record) {
+#endif  // MIXED_REC
     if (layers.size() == 0) return false;
     else if (layers.size() > 1) {
         bool stat = layers[layers.size()-1]->backward(grad_last, z[layers.size()-2], grad_mul_list[layers.size()-1], grad_z[layers.size()-1]);
@@ -96,7 +128,11 @@ bool ANN::backwardPass(eigen_vec &grad_last, bool add_record) {
     }
 }
 
+#ifdef MIXED_PREC
+bool ANN::getRecord(TYPE_N &min, TYPE_N &max) {
+#else   // MIXED_PREC
 bool ANN::getRecord(TYPE &min, TYPE &max) {
+#endif  // MIXED_REC
     if (!record) return false;
     min = record_grad_min; 
     max = record_grad_max;

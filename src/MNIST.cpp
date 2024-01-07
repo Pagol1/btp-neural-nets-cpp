@@ -51,7 +51,11 @@ MNIST::MNIST(std::vector<std::vector<uint8_t>> &tr_x, std::vector<uint8_t> &tr_y
     }
 }
 
+#ifdef MIXED_PREC
+bool MNIST::getLossVector(int y, eigen_vec_n &loss, TYPE_N &loss_val) {
+#else   // MIXED_PREC
 bool MNIST::getLossVector(int y, eigen_vec &loss, TYPE &loss_val) {
+#endif  // MIXED_PREC
     if (!model.getOutput(loss)) return false;
     /* Test Loss */
     //TYPE max_val = *std::max_element(loss.begin(), loss.end());
@@ -59,10 +63,14 @@ bool MNIST::getLossVector(int y, eigen_vec &loss, TYPE &loss_val) {
     ///////////////
     // loss[y] -= 1; // What kinda loss is this bruh
     /* log-loss */
+#ifdef MIXED_PREC
+    TYPE_N p = loss[y];
+#else   // MIXED_PREC
     TYPE p = loss[y];
-    loss_val = -log(p);
+#endif  // MIXED_PREC
+    loss_val = -log(static_cast<float>(p));
     loss.setZero();
-    if (p == 0) loss[y] = -LOSS_ZERO;
+    if (p == 0) loss[y].data_ |= LOSS_ZERO;
     else loss[y] = -1/p;
     // std::cout <<  y << "," << loss << " ";
     return true;
@@ -78,12 +86,20 @@ bool MNIST::train() {
 #ifndef ACC_ONLY
     std::cout << "Training Started\n";
 #endif
+#ifdef MIXED_PREC
+    TYPE_N loss, norm{0};
+#else   // MIXED_PREC
     TYPE loss, norm{0};
+#endif  // MIXED_PREC
     /* Batch Size = 1 */
     for (size_t batch=0; batch<train_x.size()/BATCH_SIZE; ++batch) {
         norm = 1;
         for (size_t id=batch*BATCH_SIZE; id<std::min(train_x.size(), (batch+1)*BATCH_SIZE) && stat; ++id, ++norm) {
+#ifdef MIXED_PREC
+            eigen_vec_n grad_last;
+#else   // MIXED_PREC
             eigen_vec grad_last;
+#endif  // MIXED_PREC
             grad_last.resize(10);
             stat &= model.forwardPass(train_x[id]);
             stat &= getLossVector(train_y[id], grad_last, loss);
@@ -111,12 +127,20 @@ bool MNIST::train() {
 bool MNIST::test() {
     size_t correct_pred = 0;
     int y_pred;
+#ifdef MIXED_PREC
+    TYPE_N max_pred;
+#else   // MIXED_PREC
     TYPE max_pred;
+#endif  // MIXED_PREC
     bool stat = true;
 #ifndef ACC_ONLY
     std::cout << "Testing Started\n";
 #endif
+#ifdef MIXED_PREC
+    eigen_vec_n out_pred;
+#else   // MIXED_PREC
     eigen_vec out_pred;
+#endif  // MIXED_PREC
     out_pred.resize(10);
     for (size_t id=0; id<test_x.size() && stat; ++id) {
         stat &= model.forwardPass(test_x[id]);
@@ -145,7 +169,11 @@ bool MNIST::test() {
 #else
     std::cout <<  1.0*correct_pred/test_x.size() << "\n";
 #endif
+#ifdef MIXED_PREC
+    TYPE_N grad_min, grad_max;
+#else   // MIXED_PREC
     TYPE grad_min, grad_max;
+#endif  // MIXED_PREC
 #if RECORD
     model.getRecord(grad_min, grad_max);
     std::cout << "Gradient Range: " << grad_min << " to " << grad_max << "\n";
